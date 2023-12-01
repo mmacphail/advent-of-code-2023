@@ -1,33 +1,29 @@
+from itertools import groupby
 import unittest
 
 digits = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
 digits_as_words = ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine']
-max_digit_length = max(len(word) for word in digits_as_words)
 
-def find_digit_from_word(digit_word):
-   return str(digits_as_words.index(digit_word) + 1)
+digits_representations = digits_as_words + digits
 
-def first_and_last_digit(digit_tuple_1, digit_tuple_2):
-   if digit_tuple_1 == None:
-      return digit_tuple_2
-   if digit_tuple_2 == None:
-      return digit_tuple_1
-      
-   (digit, li1, ri1) = digit_tuple_1
-   (digit, li2, ri2) = digit_tuple_2
-   return (digit, min(li1, li2), max(ri1, ri2))
+def numeric_representation(digit):
+   return digit if digit in digits else str(digits_as_words.index(digit) + 1)
+
+def find_first_and_last_digit(digit, locations):
+   first_location = min(locations, key=lambda x: x[1])[1]
+   last_location = max(locations, key=lambda x: x[2])[2]
+   return (digit, first_location, last_location)
 
 def read_calibration_line(line):
-    matching_digits = [(digit, line.find(digit), line.rfind(digit)) 
-                       for digit in digits if digit in line]
-    found_digits_dict = {digit[0]: digit for digit in matching_digits}
+    print(line)
 
-    matching_digits_words = [(find_digit_from_word(digit), line.find(digit), line.rfind(digit)) 
-                             for digit in digits_as_words if digit in line]
-    found_digits_words_dict = {digit[0]: digit for digit in matching_digits_words}
+    matching_digits = [(numeric_representation(digit), line.find(digit), line.rfind(digit))
+                       for digit in digits_representations if digit in line]
 
-    found_digits = {k: first_and_last_digit(found_digits_dict.get(k), found_digits_words_dict.get(k))
-                         for k in set(found_digits_dict) | set(found_digits_words_dict)}
+    matching_digits.sort(key=lambda x: x[0])
+
+    found_digits = {digit: find_first_and_last_digit(digit, list(locations))
+                    for digit, locations in groupby(matching_digits, key=lambda x: x[0])}
 
     if not found_digits:
         raise ValueError(f"Invalid line provided: {line}")
@@ -82,7 +78,7 @@ class TestReadCalibration(unittest.TestCase):
       self.assertEqual(result, 281)
 
 if __name__ == '__main__':
-  # unittest.main()
+  unittest.main()
 
   with open('inputs/day1.txt', 'r') as file:
      content = file.read()
