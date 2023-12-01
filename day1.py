@@ -15,8 +15,6 @@ def find_first_and_last_digit(digit, locations):
    return (digit, first_location, last_location)
 
 def read_calibration_line(line):
-    print(line)
-
     matching_digits = [(numeric_representation(digit), line.find(digit), line.rfind(digit))
                        for digit in digits_representations if digit in line]
 
